@@ -17,11 +17,7 @@ function addShelf() {
     const checkbox = document.getElementById("inputBookIsComplete");
 
     let shelf = "";
-    const shelfObject = composeShelfObject(bookTitle, bookAuthor, bookYear, false);
 
-    shelf[SHELF_ITEMID] = shelfObject.id;
-    shelfs.push(shelfObject);
-    
     if(checkbox.checked) {
         shelf = makeShelf(bookTitle, bookAuthor, bookYear, true);
         completeBookShelfList.append(shelf);
@@ -29,7 +25,13 @@ function addShelf() {
         shelf = makeShelf(bookTitle, bookAuthor, bookYear, false);
         unCompletedShelfId.append(shelf);
     }
+
+    const shelfObject = composeShelfObject(bookTitle, bookAuthor, bookYear, false);
+    shelf[SHELF_ITEMID] = shelfObject.id;
+    shelfs.push(shelfObject);
+
     updateDataToStorage();
+ 
     // end checkbox
 }
 // end input user
@@ -109,18 +111,19 @@ function addTaskToCompleted(taskElement) {
     const bookTitle = taskElement.querySelector(".book_item > h3").innerText;
     const bookAuthor = taskElement.querySelector(".book_item > .bookAuthor").innerText;
     const bookYear = taskElement.querySelector(".book_item > .bookYear").innerText;
+    
+    const newBook = makeShelf(bookTitle, bookAuthor, bookYear, true);
 
-    const newShelf = makeShelf(bookTitle, bookAuthor, bookYear, true);
-
-    const shelf = findShelf(taskElement[SHELF_ITEMID]);
+    const shelf = findBook(taskElement[SHELF_ITEMID]);
     shelf.isCompleted = true;
-    newShelf[SHELF_ITEMID] = shelf.id;
+    newBook[SHELF_ITEMID] = shelf.id;
 
-    listCompleted.append(newShelf);
+    listCompleted.append(newBook);
 
     taskElement.remove();
 
-    updateDataToStorage();  
+    updateDataToStorage();
+
 }
 // end CheckButton
 
@@ -132,7 +135,7 @@ function createTrashButton() {
 }
 
 function removeTaskFromCompleted(taskElement) {
-    const shelfPosition = findShelfIndex(taskElement[SHELF_ITEMID])
+    const shelfPosition = findBookIndex(taskElement[SHELF_ITEMID]);
     shelfs.splice(shelfPosition, 1);
 
     taskElement.remove();
@@ -155,31 +158,15 @@ function undoTaskFromCompleted(taskElement){
     const bookAuthor = taskElement.querySelector(".book_item > .bookAuthor").innerText;
     const bookYear = taskElement.querySelector(".book_item > .bookYear").innerText;
 
-    const newShelf = makeShelf(bookTitle, bookAuthor, bookYear, false);
+    const newBook = makeShelf(bookTitle, bookAuthor, bookYear, false);
 
-    const shelf = findShelf(taskElement[SHELF_ITEMID]);
+    const shelf = findBook(taskElement[SHELF_ITEMID]);
     shelf.isCompleted = false;
-    newShelf[SHELF_ITEMID] = shelf.id;
+    newBook[SHELF_ITEMID] = shelf.id;
 
-    listUnCompleted.append(newShelf);
+    listUnCompleted.append(newBook);
 
     taskElement.remove();
     updateDataToStorage();
 }
 // end create Undo Button
-
-function refreshDataFromShelf() {
-    const listUnCompleted = document.getElementById(UNCOMPLETED_LIST_SHELF_ID);
-    const listCompleted = document.getElementById(COMPLETED_LIST_SHELF_ID);
-
-    for(shelf of shelfs) {
-        const newShelf = makeShelf(shelf.bookTitle, self.bookAuthor, shelf.bookYear, shelf.isCompleted);
-        newShelf[SHELF_ITEMID] = shelf.id;
-
-        if(shelf.isCompleted) {
-            listCompleted.append(newShelf);
-        } else {
-            listUnCompleted.append(newShelf);
-        }
-    }
-}
